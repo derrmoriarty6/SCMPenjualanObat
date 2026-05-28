@@ -1,7 +1,7 @@
 # DOKUMENTASI PROJECT UAS PEMROGRAMAN VISUAL
 ## SISTEM INFORMASI PENJUALAN OBAT SCM PADA APOTEK MAJU
 
-**Dosen Pengampu:** [Nama Dosen]
+**Dosen Pengampu:** [RIZALDI, S.Kom., M.Kom.]
 **Mata Kuliah:** Pemrograman Visual
 **Topik:** Supply Chain Management (SCM) Apotek
 
