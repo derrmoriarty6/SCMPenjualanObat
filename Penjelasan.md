@@ -9,10 +9,10 @@
 
 ## 1. PENDAHULUAN (MODEL WATERFALL)
 Sistem ini dibangun menggunakan metode **Waterfall** yang terdiri dari:
-1. **Analisis Kebutuhan:** Mengumpulkan data kebutuhan Apotek Maju (Obat, Supplier, Penjualan).
-2. **Desain Sistem:** Merancang Database MySQL (4 Tabel + 1 View) dan antarmuka aplikasi.
+1. **Analisis Kebutuhan:** Mengumpulkan data kebutuhan Apotek Maju (Obat, Supplier, Penjualan, Keamanan Sistem).
+2. **Desain Sistem:** Merancang Database MySQL (4 Tabel + 1 View) dan antarmuka aplikasi dengan tambahan fitur keamanan (Login).
 3. **Implementasi Kode:** Membuat kode program menggunakan VB.NET Framework 4.0 dan MySql.Data.
-4. **Pengujian:** Mengetes setiap fitur CRUD (Create, Read, Update, Delete) dan proses transaksi perhitungan total penjualan.
+4. **Pengujian:** Mengetes setiap fitur CRUD (Create, Read, Update, Delete), proses transaksi perhitungan total penjualan, dan fitur cetak struk.
 
 Aplikasi ini mengadopsi struktur dari project referensi `AplNilaiMhs`, menerapkan pola koneksi, CRUD, dan UI yang stabil. Tema visual disesuaikan menjadi warna hijau (Apotek/Kesehatan) untuk pengalaman pengguna yang lebih baik.
 
@@ -44,51 +44,63 @@ Database menggunakan **PHPMyAdmin/MySQL** dan terdiri dari:
 
 ## 3. STRUKTUR APLIKASI (VB.NET)
 
-### 3.1 `BukaKoneksi.vb` (Modul Koneksi)
-*   **Penjelasan:** Ini adalah *jantung* dari aplikasi. Modul ini melakukan inisialisasi objek koneksi `MySqlConnection`. Jika status koneksi tertutup (`Closed`), maka aplikasi akan memanggil perintah `.Open()` untuk menyambung ke server lokal (XAMPP).
+### 3.1 Keamanan Sistem (`FormLogin.vb`)
+*   **Penjelasan:** Aplikasi ini dilindungi oleh form login sebagai *Startup Form*. Hanya pengguna yang memiliki otorisasi (Admin) yang dapat masuk ke Menu Utama.
+*   **Akun Tersedia:** 
+    - Username: `salsa`, Password: `salsa123`
+    - Username: `dinda`, Password: `dinda123`
+    - Username: `juan`, Password: `juan123`
+
+### 3.2 Modul Koneksi (`BukaKoneksi.vb`)
+*   **Penjelasan:** Ini adalah *jantung* dari aplikasi. Modul ini melakukan inisialisasi objek koneksi `MySqlConnection`.
 *   **Referensi:** Diadopsi langsung dari `bukakoneksi` milik project AplNilaiMhs.
 
-### 3.2 `F_MenuUtama.vb`
-*   **Penjelasan:** Menu navigasi utama. Menggunakan kontrol `MenuStrip` untuk mengarahkan pengguna ke setiap form fitur. Form ini di-set sebagai *Startup Form* agar pertama kali muncul saat aplikasi "Run".
+### 3.3 `F_MenuUtama.vb`
+*   **Penjelasan:** Menu navigasi utama menggunakan kontrol `MenuStrip` untuk mengarahkan pengguna ke setiap form fitur.
 *   **Tema:** Background color diatur ke hijau gelap (`0, 64, 0`) sesuai dengan identitas Apotek.
 
-### 3.3 Form Master Data (CRUD)
-Sistem memiliki 3 Form Master yang melakukan proses C-R-U-D. Alur standarnya:
+### 3.4 Form Master Data (CRUD)
+Sistem memiliki 3 Form Master yang melakukan proses C-R-U-D (Create, Read, Update, Delete) dan Pencarian (*Search*):
 1.  **Read (`isilist`):** Saat form `Load`, aplikasi melakukan `SELECT * FROM [tabel]` dan memindahkannya ke dalam kontrol `ListView`.
-2.  **Create (`btnSave_Click`):** Memvalidasi TextBox, jika terisi penuh, menjalankan query `INSERT INTO` untuk menambah data.
-3.  **Update (`btnEdit_Click`):** Saat baris di `ListView` diklik, data pindah ke TextBox. Pengguna mengubah data, klik EDIT, dan query `UPDATE [tabel] SET ...` dijalankan.
-4.  **Delete (`btnDelete_Click`):** Memunculkan kotak konfirmasi (MsgBoxStyle.OkCancel). Jika OK, menjalankan query `DELETE FROM [tabel] WHERE...`.
-5.  **Search (`caridata`):** Menerapkan event handler `TextChanged` pada kolom pencarian. Query yang dijalankan: `SELECT * FROM [tabel] WHERE id LIKE '%X%' OR nama LIKE '%X%'`. Fitur ini merespon ketikan secara *real-time*.
+2.  **Create (`btnSave_Click`):** Memvalidasi TextBox, jika terisi penuh, menjalankan query `INSERT INTO`.
+3.  **Update (`btnEdit_Click`):** Saat baris di `ListView` diklik, data pindah ke TextBox. Setelah diedit, menjalankan query `UPDATE [tabel] SET ...`.
+4.  **Delete (`btnDelete_Click`):** Menjalankan query `DELETE FROM [tabel] WHERE...` dengan konfirmasi keamanan.
+5.  **Search (`caridata`):** Menerapkan pencarian *real-time* dengan event `TextChanged`.
 
 **Daftar Form Master:**
-*   `FormSupplier.vb`: Untuk mengelola `tblsupplier`. (Diadaptasi dari logika `FormDosen`).
-*   `FormKategoriObat.vb`: Untuk mengelola `tblkategori`. (Diadaptasi dari logika `FormMataKuliah`).
-*   `FormObat.vb`: Mengelola `tblobat`. Memiliki `ComboBox` untuk satuan dan tombol pencarian popup. (Diadaptasi dari logika `FormMahasiswa`).
+*   `FormSupplier.vb`: Untuk mengelola `tblsupplier`. 
+*   `FormKategoriObat.vb`: Untuk mengelola `tblkategori`.
+*   `FormObat.vb`: Mengelola `tblobat`. Dilengkapi dengan tombol pencarian popup (`...`) untuk mengisi **Kode Kategori** dan **Kode Supplier** secara otomatis (textbox bersifat *Read Only* agar data konsisten).
 
-### 3.4 Form Transaksi (`FormTransaksiPenjualan.vb`)
-*   **Penjelasan:** Mencatat transaksi hilir rantai pasok (SCM) yaitu dari Apotek ke Pelanggan.
-*   **Proses Logika (`BtnProses_Click`):** Ketika obat dipilih, Harga Satuan dan Satuan akan terisi otomatis (readonly). Saat `jumlah` dimasukkan dan tombol `PROSES` ditekan, sistem melakukan perhitungan: `Total Harga = Jumlah * Harga Satuan`.
-*   **Simpan Transaksi:** Menyimpan riwayat beserta nama pembeli dan status (`Lunas` / `Hutang`). (Diadaptasi penuh dari logika perhitungan `FormNilai`).
+### 3.5 Form Transaksi (`FormTransaksiPenjualan.vb`)
+*   **Penjelasan:** Mencatat transaksi dari Apotek ke Pelanggan.
+*   **Proses Kalkulasi:** Ketika obat dipilih, Harga Satuan dan Satuan akan terisi otomatis. Saat `jumlah` dimasukkan dan tombol `PROSES` ditekan, sistem menghitung: `Total Harga = Jumlah * Harga Satuan`.
+*   **Pengurutan Data:** Data riwayat penjualan ditampilkan secara berurutan mulai dari transaksi pertama (ID ke-1) menggunakan query `ORDER BY id_penjualan ASC`.
+*   **Fitur Cetak Struk:** Menggunakan kelas `PrintDocument` bawaan .NET (tanpa perlu *runtime* tambahan seperti SAP Crystal Reports). Pengguna dapat mengklik data transaksi di tabel, lalu menekan tombol **CETAK** untuk membuka *Print Preview* struk gaya nota kasir, yang siap dicetak ke printer.
 
-### 3.5 Form Popup Pencarian (`FormCariObat.vb` & `FormCariSupplier.vb`)
-*   **Penjelasan:** Sebagai form *helper* untuk memudahkan input FK (Foreign Key). Saat di `FormTransaksi`, user menekan tombol cari obat -> `FormCariObat` muncul -> User klik obat di tabel -> Form pencarian tertutup dan data obat (Kode, Nama, Harga) langsung berpindah otomatis ke TextBox di `FormTransaksi`.
+### 3.6 Form Popup Pencarian
+Sebagai form *helper* untuk memudahkan input FK (Foreign Key) tanpa harus mengetik ID manual:
+*   `FormCariObat.vb` (Digunakan di Form Transaksi)
+*   `FormCariSupplier.vb` (Digunakan di Form Obat)
+*   `FormCariKategori.vb` (Digunakan di Form Obat)
 
 ---
 
 ## 4. INTEGRASI TEMA SCM (Supply Chain Management)
 Project ini mengintegrasikan alur sederhana dari proses rantai pasok:
-1.  **Hulu (Upstream):** Terdapat data `Supplier`. Setiap Obat wajib memiliki kaitan dengan siapa suppliernya (`kd_supplier`).
-2.  **Internal (Inventory):** Pengaturan jumlah persediaan barang dalam kolom `Stok` pada master Obat, beserta informasi Kategori produk.
-3.  **Hilir (Downstream):** Modul Penjualan ke *end-user* / pembeli.
+1.  **Hulu (Upstream):** Terdapat data `Supplier`. Setiap Obat wajib memiliki kaitan dengan siapa pemasoknya.
+2.  **Internal (Inventory):** Pengaturan stok persediaan barang pada master Obat, beserta informasi Kategori produk.
+3.  **Hilir (Downstream):** Modul Penjualan ke konsumen/pembeli.
 
 ## 5. CARA MENJALANKAN (DEPLOYMENT)
 1. Nyalakan server **Apache** dan **MySQL** dari XAMPP Control Panel.
 2. Buka `localhost/phpmyadmin` di browser.
 3. Buat database baru bernama `db_apotek_maju`.
 4. Pilih menu **Import**, lalu masukkan file `db_apotek_maju.sql` yang ada di root folder project ini.
-5. Buka project `SCMPenjualanObat.sln` di Microsoft Visual Studio (versi 2010 ke atas didukung).
+5. Buka project `SCMPenjualanObat.sln` di Microsoft Visual Studio.
 6. Tekan `F5` atau tombol **Start Debugging** (ikon hijau).
-7. Aplikasi Apotek Maju siap digunakan.
+7. Login menggunakan akun `salsa` / `salsa123`.
+8. Aplikasi Apotek Maju siap digunakan.
 
 ---
-*Dokumen ini dibuat untuk melengkapi presentasi Ujian Akhir Semester (UAS).*
+*Dokumen ini diperbarui untuk melengkapi presentasi Ujian Akhir Semester (UAS).*

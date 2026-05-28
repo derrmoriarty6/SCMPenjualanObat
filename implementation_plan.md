@@ -82,7 +82,12 @@ Pola kode yang akan di-adopsi:
 
 ---
 
-### Komponen 3: Menu Utama
+### Komponen 3: Menu Utama & Keamanan
+
+#### [NEW] FormLogin.vb + FormLogin.Designer.vb
+- Form login dengan hardcode credentials (salsa/salsa123, dinda/dinda123, juan/juan123)
+- Di-set sebagai **Startup Form**.
+- Jika sukses login, akan membuka `F_MenuUtama` dan form login disembunyikan.
 
 #### [NEW] F_MenuUtama.vb + F_MenuUtama.Designer.vb
 - MenuStrip: **Master Data** (Obat, Kategori Obat, Supplier) → **Transaksi** (Penjualan Obat) → **Cari Data** (Obat, Supplier) → **Laporan** → **Keluar**
@@ -107,7 +112,7 @@ Pola kode yang akan di-adopsi:
 
 #### [NEW] FormObat.vb + FormObat.Designer.vb
 - CRUD untuk `tblobat` — pola **mirip FormMahasiswa** (lebih kompleks, ada ComboBox/RadioButton)
-- Field: Kode Obat, Nama Obat, Kategori (via ComboBox/Button Cari), Supplier (via Button Cari), Satuan (ComboBox: Tablet/Botol/Strip/Kapsul/Tube), Harga, Stok
+- Field: Kode Obat, Nama Obat, Kategori (via Button Cari, TextBox ReadOnly), Supplier (via Button Cari, TextBox ReadOnly), Satuan (ComboBox: Tablet/Botol/Strip/Kapsul/Tube), Harga, Stok
 - Button: REFRESH, SAVE, EDIT, DELETE, EXIT, Cari Supplier, Cari Kategori
 - ListView + Pencarian
 
@@ -119,8 +124,9 @@ Pola kode yang akan di-adopsi:
 - Pola **mirip FormNilai** (Transaksi + proses kalkulasi)
 - Field: Tanggal (DateTimePicker), Kode Obat (via Button Cari), Nama Obat (readonly), Satuan (readonly), Harga Satuan (readonly), Jumlah (input), Total Harga (auto-kalkulasi), Nama Pembeli, Keterangan
 - Proses: Total = Jumlah × Harga Satuan (mirip prosesnilai)
-- Button: REFRESH, PROSES, SAVE, EDIT, DELETE, EXIT, Cari Obat
-- ListView menampilkan semua transaksi (query view)
+- Cetak Struk: Menggunakan `PrintDocument` dan `PrintPreviewDialog` bawaan .NET. (Cetak format kasir apotek)
+- Button: REFRESH, PROSES, SAVE, EDIT, DELETE, CETAK, EXIT, Cari Obat
+- ListView menampilkan semua transaksi (query view) terurut dari ID terkecil (`ASC`)
 
 ---
 
@@ -131,6 +137,9 @@ Pola kode yang akan di-adopsi:
 
 #### [NEW] FormCariSupplier.vb + FormCariSupplier.Designer.vb
 - Pola **mirip FormCariDosen** — pencarian supplier, hasil kembali ke FormObat
+
+#### [NEW] FormCariKategori.vb + FormCariKategori.Designer.vb
+- Pola **mirip FormCariDosen** — pencarian kategori, hasil kembali ke FormObat
 
 ---
 
@@ -144,8 +153,8 @@ Pola kode yang akan di-adopsi:
 - Tambah konfigurasi sesuai referensi
 
 #### [MODIFY] My Project files
-- Update `Application.myapp` → MainForm = F_MenuUtama
-- Update `Application.Designer.vb` → Startup form F_MenuUtama
+- Update `Application.myapp` → MainForm = FormLogin
+- Update `Application.Designer.vb` → Startup form FormLogin
 - Update `AssemblyInfo.vb` → nama project SCMPenjualanObat
 
 ---
